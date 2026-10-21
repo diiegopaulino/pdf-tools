@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF Tools — Reordenar e Mesclar PDF</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{--bg:#f3f0f0;--surface:#fff;--text:#33333b;--muted:#7a7a85;--line:#e3dfde;--accent:#e5322d;--accent-h:#c92a26;--accent-t:#fff;--soft:#fdeceb;--ok:#15803d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1a1b;--surface:#262526;--text:#f1eeee;--muted:#a3a0a2;--line:#3b393a;--accent:#ef4a45;--accent-h:#ff625d;--soft:#3a2221;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#1b1a1b;--surface:#262526;--text:#f1eeee;--muted:#a3a0a2;--line:#3b393a;--accent:#ef4a45;--accent-h:#ff625d;--soft:#3a2221;--ok:#4ade80}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top,0px)}
+.hin{max-width:1060px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.25rem;cursor:pointer;background:none;border:0;color:var(--text);padding:0}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:1rem}
+.brand b{color:var(--accent)}
+nav{display:flex;gap:4px}
+nav button{background:none;border:0;font:inherit;font-weight:700;color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
+nav button:hover,nav button.on{color:var(--accent);background:var(--soft)}
+main{width:100%;max-width:1060px;margin:0 auto;padding:30px 18px 70px;flex:1}
+.view{display:none}.view.on{display:block}
+.center{text-align:center}
+h1{font-size:2rem;margin:0 0 6px;font-weight:800;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 auto 26px;max-width:620px}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;max-width:900px;margin:0 auto}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 20px;text-align:left;cursor:pointer;font:inherit;color:var(--text);transition:.15s}
+.tool:hover{box-shadow:0 6px 22px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--accent)}
+.ico{width:46px;height:46px;border-radius:12px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:1.4rem;margin-bottom:12px}
+.tool h3{margin:0 0 4px;font-size:1.15rem;font-weight:800}
+.tool p{margin:0;color:var(--muted);font-size:.93rem}
+button{font:inherit;cursor:pointer}
+.btn{border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:9px 16px;font-weight:700}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-t);border-color:var(--accent);font-size:1.05rem;padding:13px 30px;font-weight:800}
+.btn.primary:hover{background:var(--accent-h);color:var(--accent-t)}
+.btn:disabled{opacity:.5;cursor:default}
+.drop{border:2px dashed var(--line);border-radius:16px;background:var(--surface);padding:56px 20px;text-align:center;cursor:pointer;transition:.15s;max-width:720px;margin:0 auto}
+.drop.over,.drop:hover{border-color:var(--accent);background:var(--soft)}
+.drop .btn.primary{pointer-events:none;margin-bottom:12px}
+.drop span{display:block;color:var(--muted);font-size:.92rem}
+.bar{display:none;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;position:sticky;top:calc(58px + env(safe-area-inset-top,0px));background:var(--bg);padding:10px 0;z-index:5}
+.bar .info{flex:1;min-width:150px;color:var(--muted);font-size:.92rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{color:var(--muted);font-size:.88rem;margin:0 0 12px;display:none}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,150px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;cursor:grab;user-select:none;-webkit-user-select:none}
+.card.sortable-ghost{opacity:.35}.card.sortable-chosen{border-color:var(--accent)}
+.thumb{cursor:zoom-in;height:calc(var(--cw,150px)*1.13);display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:7px;overflow:hidden}
+.thumb img{max-width:100%;max-height:100%;transition:transform .2s;pointer-events:none}
+.ld{color:var(--muted);font-size:.8rem}
+.meta{display:flex;justify-content:space-between;margin-top:7px;font-size:.82rem}
+.pos{font-weight:800;color:var(--accent)}.orig{color:var(--muted)}
+.acts{display:flex;gap:4px;margin-top:6px}
+.acts button{flex:1;padding:4px 0;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:7px}
+.acts button:hover{border-color:var(--accent);color:var(--accent)}
+#flist{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:0 auto}
+.frow{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:grab}
+.frow.sortable-ghost{opacity:.35}
+.frow .thumb{height:74px;width:56px;flex:none}
+.fi{flex:1;min-width:0}
+.fi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi span{color:var(--muted);font-size:.85rem}
+.x{border:0;background:none;color:var(--muted);font-size:1.2rem;padding:6px 10px;border-radius:8px}
+.x:hover{color:var(--accent);background:var(--soft)}
+.msg{margin-top:16px;font-size:.95rem;color:var(--muted);text-align:center;font-weight:600}
+.msg.ok{color:var(--ok)}
+.xcard{position:relative;cursor:pointer}
+.xcard.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.xcard .thumb{cursor:pointer;height:calc(var(--cw,140px)*1.2)}
+.zbtn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:7px;padding:2px 8px;font-size:.85rem}
+.zbtn:hover{border-color:var(--accent);color:var(--accent)}
+.xcard .chk{position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;font-size:.8rem;color:transparent;font-weight:800;z-index:2}
+.xcard.sel .chk{background:var(--accent);border-color:var(--accent);color:#fff}
+#xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,140px),1fr));gap:14px}
+.range input[type=text]{font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);width:190px}
+.range input[type=text]:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.zoom{display:flex;align-items:center;gap:6px}
+.zoom input{width:110px;accent-color:var(--accent)}
+.zoom .btn{padding:3px 11px;font-size:1.05rem}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:flex;align-items:center;justify-content:center;gap:12px;padding:16px}
+#lb[hidden]{display:none}
+.lbc{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:calc(100% - 120px)}
+#lbi{max-width:100%;max-height:calc(100vh - 90px);background:#fff;border-radius:4px;transition:transform .2s}
+#lbt{color:#fff;font-weight:700;font-size:.9rem;text-align:center}
+.lbn,.lbx{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:50%;width:44px;height:44px;font-size:1.6rem;flex:none;line-height:1}
+.lbn:hover,.lbx:hover{background:var(--accent)}
+.lbx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;font-size:1.1rem}
+.mact{display:none;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+footer{background:var(--surface);border-top:1px solid var(--line);text-align:center;padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));font-size:.82rem}
+footer .copy{margin:0 0 2px;color:var(--muted);font-weight:600}
+footer .dev{margin:0 0 8px;color:var(--muted);font-weight:600}
+footer .social{display:flex;justify-content:center;gap:14px}
+footer .social a{color:var(--muted);display:inline-flex;transition:.15s}
+footer .social a:hover{color:var(--accent)}
+footer svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<header><div class="hin">
+  <button class="brand" data-go="home"><span class="logo">📄</span>PDF <b>Tools</b></button>
+  <nav><button data-go="reordenar">Reordenar PDF</button><button data-go="mesclar">Mesclar PDF</button><button data-go="extrair">Extrair páginas</button></nav>
+</div></header>
+
+<main>
+<section class="view" id="v-home">
+  <div class="center">
+    <h1>Todas as ferramentas de PDF que você precisa</h1>
+    <p class="sub">Simples, rápido e privado: tudo roda no seu navegador, sem enviar arquivos para servidores.</p>
+  </div>
+  <div class="tools">
+    <button class="tool" data-go="reordenar"><div class="ico">⇅</div><h3>Reordenar PDF</h3><p>Arraste as páginas para a ordem que você quiser, gire ou remova páginas.</p></button>
+    <button class="tool" data-go="mesclar"><div class="ico">⊕</div><h3>Mesclar PDF</h3><p>Combine vários PDFs em um único arquivo, na ordem que preferir.</p></button>
+    <button class="tool" data-go="extrair"><div class="ico">⇲</div><h3>Extrair páginas</h3><p>Escolha apenas as páginas que quer e gere um novo PDF com elas.</p></button>
+  </div>
+</section>
+
+<section class="view" id="v-reordenar">
+  <div class="center"><h1>Reordenar PDF</h1><p class="sub">Envie um PDF, arraste as páginas para a nova ordem e baixe o resultado.</p></div>
+  <div class="drop" id="drop1" tabindex="0"><span class="btn primary">Selecionar arquivo PDF</span><span>ou arraste e solte aqui</span></div>
+  <input type="file" id="file1" accept="application/pdf" hidden>
+  <div class="bar" id="bar1">
+    <div class="info" id="info1"></div>
+    <div class="zoom" title="Zoom das miniaturas"><button class="btn" id="zout" aria-label="Diminuir">−</button><input type="range" id="zoom" min="130" max="420" step="10" value="150" aria-label="Zoom"><button class="btn" id="zin" aria-label="Aumentar">+</button></div>
+    <button class="btn" id="reverse">Inverter ordem</button>
+    <button class="btn" id="reset">Restaurar</button>
+    <button class="btn" id="other">Trocar PDF</button>
+    <button class="btn primary" id="gen" style="padding:10px 22px;font-size:1rem">Gerar novo PDF</button>
+  </div>
+  <p class="hint" id="hint">Arraste os cartões para reordenar. ⟳ gira, ✕ remove e 🔍 (ou clique na miniatura) amplia a página. Use o zoom acima para aumentar as miniaturas.</p>
+  <div id="grid"></div>
+  <div class="msg" id="msg1"></div>
+</section>
+
+<section class="view" id="v-mesclar">
+  <div class="center"><h1>Mesclar PDF</h1><p class="sub">Combine vários PDFs em um só. Arraste os arquivos para definir a ordem.</p></div>
+  <div class="drop" id="drop2" tabindex="0"><span class="btn primary">Selecionar arquivos PDF</span><span>ou arraste e solte vários arquivos aqui</span></div>
+  <input type="file" id="file2" accept="application/pdf" multiple hidden>
+  <div id="flist"></div>
+  <div class="mact" id="mact">
+    <button class="btn" id="add">+ Adicionar mais arquivos</button>
+    <button class="btn" id="clear">Limpar tudo</button>
+    <button class="btn primary" id="merge">Mesclar PDFs</button>
+  </div>
+  <div class="msg" id="msg2"></div>
+</section>
+<section class="view" id="v-extrair">
+  <div class="center"><h1>Extrair páginas</h1><p class="sub">Envie um PDF, escolha as páginas que quer manter e baixe um novo arquivo só com elas.</p></div>
+  <div class="drop" id="drop3" tabindex="0"><span class="btn primary">Selecionar arquivo PDF</span><span>ou arraste e solte aqui</span></div>
+  <input type="file" id="file3" accept="application/pdf" hidden>
+  <div class="bar" id="bar3">
+    <div class="info" id="xinfo"></div>
+    <div class="range"><input type="text" id="xrange" placeholder="Ex.: 1-3, 5, 8-10" aria-label="Intervalo de páginas" autocomplete="off"></div>
+    <div class="zoom" title="Zoom das miniaturas"><button class="btn" id="xzout" aria-label="Diminuir">−</button><input type="range" id="xzoom" min="120" max="420" step="10" value="140" aria-label="Zoom"><button class="btn" id="xzin" aria-label="Aumentar">+</button></div>
+    <button class="btn" id="xall">Todas</button>
+    <button class="btn" id="xnone">Nenhuma</button>
+    <button class="btn" id="xinv">Inverter</button>
+    <button class="btn" id="xother">Trocar PDF</button>
+    <button class="btn primary" id="xgen" style="padding:10px 22px;font-size:1rem">Extrair páginas</button>
+  </div>
+  <p class="hint" id="hint3">Clique nas páginas para selecioná-las ou digite o intervalo acima. As páginas extraídas seguem a ordem original do PDF.</p>
+  <div id="xgrid"></div>
+  <div class="msg" id="msg3"></div>
+</section>
+</main>
+
+<footer>
+  <p class="copy">PDF Tools © 2026 - Ferramentas de PDF no navegador</p>
+  <p class="dev">Desenvolvido por Diego Souza</p>
+  <div class="social">
+    <a href="https://instagram.com/diiegopaulino" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a>
+    <a href="https://github.com/diiegopaulino" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+    <a href="https://linkedin.com/in/diiegopaulino" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+  </div>
+</footer>
+
+<div id="lb" hidden>
+  <button class="lbx" id="lbx" aria-label="Fechar">✕</button>
+  <button class="lbn" id="lbp" aria-label="Anterior">‹</button>
+  <div class="lbc"><img id="lbi" alt="Página ampliada"><div id="lbt"></div></div>
+  <button class="lbn" id="lbnx" aria-label="Próxima">›</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $ = id => document.getElementById(id);
+const say = (el, t, ok) => { el.textContent = t || ""; el.className = "msg" + (ok ? " ok" : ""); };
+
+/* ---------- navegação entre páginas ---------- */
+function show(v){
+  if (!["home","reordenar","mesclar","extrair"].includes(v)) v = "home";
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
+  window.scrollTo(0, 0);
+  try { history.replaceState(null, "", "#" + v); } catch (_) {}
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) show(g.dataset.go); });
+show((location.hash || "").slice(1));
+
+/* ---------- utilidades ---------- */
+function wireDrop(drop, input, cb){
+  drop.onclick = () => input.click();
+  drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") input.click(); };
+  input.onchange = () => { cb([...input.files]); input.value = ""; };
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => cb([...e.dataTransfer.files]));
+}
+const isPdf = f => f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+async function thumbOf(doc, n, scale){
+  const page = await doc.getPage(n), vp = page.getViewport({ scale });
+  const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+  await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+  return c.toDataURL("image/jpeg", 0.8);
+}
+async function saveFile(bytes, fname){
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  let dl = null; try { dl = await claude.use("downloads"); } catch (_) {}
+  if (dl) return dl.save({ filename: fname, data: blob });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const fmt = b => b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
+
+/* ---------- REORDENAR ---------- */
+const grid = $("grid"), msg1 = $("msg1");
+let bytes = null, name = "", total = 0, order = [], rot = [], thumbs = [], gen = 0, pdfDoc = null, cw = 150, zT = 0;
+const thumbScale = () => Math.min(2, Math.max(0.5, cw * Math.min(window.devicePixelRatio || 1, 2) / 500));
+wireDrop($("drop1"), $("file1"), fs => fs[0] && load(fs[0]));
+$("other").onclick = () => $("file1").click();
+
+async function load(f){
+  if (!isPdf(f)) return say(msg1, "Escolha um arquivo PDF.");
+  say(msg1, "Lendo o PDF…"); const my = ++gen;
+  try {
+    bytes = new Uint8Array(await f.arrayBuffer()); name = f.name;
+    const doc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+    pdfDoc = doc; total = doc.numPages; order = Array.from({length: total}, (_, i) => i);
+    rot = new Array(total).fill(0); thumbs = new Array(total).fill(null);
+    $("drop1").style.display = "none"; $("bar1").style.display = "flex"; $("hint").style.display = "block";
+    render(); say(msg1, "");
+    for (let i = 0; i < total; i++) {
+      if (my !== gen) return;
+      thumbs[i] = await thumbOf(doc, i + 1, thumbScale());
+      const el = grid.querySelector(`[data-src="${i}"] .thumb`); if (el) setThumb(el, i);
+    }
+  } catch (e) { console.error(e); say(msg1, "Não foi possível ler esse PDF (pode estar protegido por senha ou corrompido)."); }
+}
+function setThumb(el, i){
+  el.innerHTML = "";
+  if (!thumbs[i]) { el.innerHTML = '<span class="ld">carregando…</span>'; return; }
+  const img = new Image(); img.src = thumbs[i]; img.alt = "Página " + (i + 1);
+  img.style.transform = `rotate(${rot[i]}deg)`; el.appendChild(img);
+}
+function render(){
+  grid.innerHTML = "";
+  order.forEach(i => {
+    const d = document.createElement("div"); d.className = "card"; d.dataset.src = i;
+    d.innerHTML = `<div class="thumb"></div><div class="meta"><span class="pos"></span><span class="orig">orig. ${i + 1}</span></div>
+      <div class="acts"><button data-a="view" title="Ampliar">🔍</button><button data-a="rot" title="Girar 90°">⟳</button><button data-a="del" title="Remover página">✕</button></div>`;
+    setThumb(d.querySelector(".thumb"), i); grid.appendChild(d);
+  });
+  labels();
+}
+function labels(){
+  [...grid.children].forEach((c, k) => c.querySelector(".pos").textContent = "#" + (k + 1));
+  $("info1").textContent = `${name} — ${order.length} de ${total} páginas`;
+  $("gen").disabled = !order.length;
+}
+const syncOrder = () => { order = [...grid.children].map(c => +c.dataset.src); labels(); };
+new Sortable(grid, { animation: 150, onEnd: syncOrder, filter: "button", preventOnFilter: false });
+grid.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) { const t = e.target.closest(".thumb"); if (t) openLb([...grid.children].indexOf(t.closest(".card"))); return; }
+  const card = b.closest(".card"), i = +card.dataset.src;
+  if (b.dataset.a === "rot") { rot[i] = (rot[i] + 90) % 360; setThumb(card.querySelector(".thumb"), i); }
+  if (b.dataset.a === "view") openLb([...grid.children].indexOf(card));
+  if (b.dataset.a === "del") { card.remove(); syncOrder(); }
+});
+$("reverse").onclick = () => { order.reverse(); render(); };
+$("reset").onclick = () => { order = Array.from({length: total}, (_, i) => i); rot.fill(0); render(); say(msg1, ""); };
+$("gen").onclick = async () => {
+  const btn = $("gen"); btn.disabled = true; say(msg1, "Gerando PDF…");
+  try {
+    const { PDFDocument, degrees } = PDFLib;
+    const src = await PDFDocument.load(bytes, { ignoreEncryption: true }), out = await PDFDocument.create();
+    const pages = await out.copyPages(src, order);
+    pages.forEach((p, k) => { const x = rot[order[k]]; if (x) p.setRotation(degrees((p.getRotation().angle + x) % 360)); out.addPage(p); });
+    const fname = name.replace(/\.pdf$/i, "") + "-reordenado.pdf";
+    await saveFile(await out.save(), fname); say(msg1, "PDF gerado: " + fname, true);
+  } catch (e) {
+    if (e && e.code === "declined") say(msg1, "Download cancelado.");
+    else { console.error(e); say(msg1, "Erro ao gerar o PDF. Tente novamente."); }
+  }
+  btn.disabled = false;
+};
+
+/* zoom das miniaturas */
+async function rethumb(){
+  if (!pdfDoc) return;
+  const my = ++gen, s = thumbScale();
+  for (let i = 0; i < total; i++) {
+    if (my !== gen) return;
+    thumbs[i] = await thumbOf(pdfDoc, i + 1, s);
+    const el = grid.querySelector(`[data-src="${i}"] .thumb`); if (el) setThumb(el, i);
+  }
+}
+function setZoom(v){
+  cw = Math.max(130, Math.min(420, v)); $("zoom").value = cw;
+  grid.style.setProperty("--cw", cw + "px");
+  clearTimeout(zT); zT = setTimeout(rethumb, 350);
+}
+$("zoom").oninput = e => setZoom(+e.target.value);
+$("zin").onclick = () => setZoom(cw + 40);
+$("zout").onclick = () => setZoom(cw - 40);
+
+/* visualização ampliada */
+const lb = $("lb"), lbi = $("lbi"), lbt = $("lbt"); let lbPos = -1, lbTok = 0;
+let lbMode = "r";
+async function openLb(pos, mode){
+  if (mode) lbMode = mode;
+  const X = lbMode === "x", doc = X ? xDoc : pdfDoc, list = X ? xList() : order, tt = X ? xThumbs : thumbs, rr = X ? null : rot;
+  if (!doc || pos < 0 || pos >= list.length) return;
+  lbPos = pos; lb.hidden = false; const my = ++lbTok, i = list[pos];
+  lbt.textContent = X ? `Página ${i + 1} de ${xTotal}${xSel.has(i) ? " · selecionada" : ""}` : `Posição #${pos + 1} de ${order.length} · página original ${i + 1}`;
+  lbi.style.transform = `rotate(${rr ? rr[i] : 0}deg)`;
+  if (tt[i]) lbi.src = tt[i];
+  try {
+    const page = await doc.getPage(i + 1), base = page.getViewport({ scale: 1 }).height;
+    const s = Math.min(3, Math.min(innerHeight - 90, 1000) * Math.min(window.devicePixelRatio || 1, 2) / base);
+    const vp = page.getViewport({ scale: s }), c = document.createElement("canvas");
+    c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    if (my === lbTok) lbi.src = c.toDataURL("image/jpeg", 0.92);
+  } catch (_) {}
+}
+const closeLb = () => { lb.hidden = true; lbTok++; };
+$("lbx").onclick = closeLb;
+lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
+$("lbp").onclick = () => openLb(lbPos - 1);
+$("lbnx").onclick = () => openLb(lbPos + 1);
+document.addEventListener("keydown", e => {
+  if (lb.hidden) return;
+  if (e.key === "Escape") closeLb();
+  if (e.key === "ArrowLeft") openLb(lbPos - 1);
+  if (e.key === "ArrowRight") openLb(lbPos + 1);
+});
+
+/* ---------- EXTRAIR ---------- */
+const xgrid = $("xgrid"), msg3 = $("msg3"), xr = $("xrange");
+let xBytes = null, xName = "", xTotal = 0, xSel = new Set(), xThumbs = [], xGen = 0, xDoc = null, xcw = 140, xzT = 0;
+const xScale = () => Math.min(2, Math.max(0.6, xcw * Math.min(window.devicePixelRatio || 1, 2) / 500));
+function xList(){ return Array.from({length: xTotal}, (_, i) => i); }
+wireDrop($("drop3"), $("file3"), fs => fs[0] && xLoad(fs[0]));
+$("xother").onclick = () => $("file3").click();
+
+async function xLoad(f){
+  if (!isPdf(f)) return say(msg3, "Escolha um arquivo PDF.");
+  say(msg3, "Lendo o PDF…"); const my = ++xGen;
+  try {
+    xBytes = new Uint8Array(await f.arrayBuffer()); xName = f.name;
+    const doc = await pdfjsLib.getDocument({ data: xBytes.slice() }).promise;
+    xDoc = doc; xTotal = doc.numPages; xSel = new Set(); xThumbs = new Array(xTotal).fill(null);
+    $("drop3").style.display = "none"; $("bar3").style.display = "flex"; $("hint3").style.display = "block";
+    xRender(); say(msg3, "");
+    for (let i = 0; i < xTotal; i++) {
+      if (my !== xGen) return;
+      xThumbs[i] = await thumbOf(doc, i + 1, xScale());
+      const el = xgrid.querySelector(`[data-p="${i}"] .thumb`); if (el) xThumb(el, i);
+    }
+  } catch (e) { console.error(e); say(msg3, "Não foi possível ler esse PDF (pode estar protegido por senha ou corrompido)."); }
+}
+function xThumb(el, i){
+  el.innerHTML = "";
+  if (!xThumbs[i]) { el.innerHTML = '<span class="ld">carregando…</span>'; return; }
+  const img = new Image(); img.src = xThumbs[i]; img.alt = "Página " + (i + 1); el.appendChild(img);
+}
+function xRender(){
+  xgrid.innerHTML = "";
+  for (let i = 0; i < xTotal; i++) {
+    const d = document.createElement("div"); d.className = "card xcard"; d.dataset.p = i;
+    d.innerHTML = `<span class="chk">✓</span><div class="thumb"></div><div class="meta"><span class="pos">Página ${i + 1}</span><button class="zbtn" title="Ampliar">🔍</button></div>`;
+    xThumb(d.querySelector(".thumb"), i); xgrid.appendChild(d);
+  }
+  xUpdate(true);
+}
+function xFmt(){
+  const a = [...xSel].sort((x, y) => x - y), out = []; let s = null, p = null;
+  const push = () => out.push(s === p ? s + 1 : (s + 1) + "-" + (p + 1));
+  for (const n of a) { if (s === null) { s = p = n; } else if (n === p + 1) { p = n; } else { push(); s = p = n; } }
+  if (s !== null) push();
+  return out.join(", ");
+}
+function xParse(t){
+  const s = new Set();
+  for (const part of t.split(/[,;\s]+/).filter(Boolean)) {
+    const m = part.match(/^(\d+)(?:-(\d+))?$/); if (!m) return null;
+    let a = +m[1], b = m[2] ? +m[2] : a; if (a > b) [a, b] = [b, a];
+    if (a < 1 || b > xTotal) return null;
+    for (let n = a; n <= b; n++) s.add(n - 1);
+  }
+  return s;
+}
+function xUpdate(fromSel){
+  if (fromSel) { xr.value = xFmt(); xr.style.borderColor = ""; }
+  xgrid.querySelectorAll(".xcard").forEach(c => c.classList.toggle("sel", xSel.has(+c.dataset.p)));
+  $("xinfo").textContent = `${xName} — ${xSel.size} de ${xTotal} páginas selecionadas`;
+  const g = $("xgen"); g.disabled = !xSel.size;
+  g.textContent = xSel.size ? `Extrair ${xSel.size} página${xSel.size > 1 ? "s" : ""}` : "Extrair páginas";
+}
+xgrid.addEventListener("click", e => {
+  const c = e.target.closest(".xcard"); if (!c) return;
+  if (e.target.closest(".zbtn")) { openLb(+c.dataset.p, "x"); return; }
+  const i = +c.dataset.p; xSel.has(i) ? xSel.delete(i) : xSel.add(i); xUpdate(true);
+});
+xr.oninput = () => {
+  const s = xParse(xr.value);
+  xr.style.borderColor = s ? "" : "var(--accent)";
+  if (s) { xSel = s; xUpdate(false); }
+};
+$("xall").onclick = () => { xSel = new Set(Array.from({length: xTotal}, (_, i) => i)); xUpdate(true); };
+$("xnone").onclick = () => { xSel = new Set(); xUpdate(true); };
+$("xinv").onclick = () => { xSel = new Set(Array.from({length: xTotal}, (_, i) => i).filter(i => !xSel.has(i))); xUpdate(true); };
+async function xRethumb(){
+  if (!xDoc) return;
+  const my = ++xGen, s = xScale();
+  for (let i = 0; i < xTotal; i++) {
+    if (my !== xGen) return;
+    xThumbs[i] = await thumbOf(xDoc, i + 1, s);
+    const el = xgrid.querySelector(`[data-p="${i}"] .thumb`); if (el) xThumb(el, i);
+  }
+}
+function xSetZoom(v){
+  xcw = Math.max(120, Math.min(420, v)); $("xzoom").value = xcw;
+  xgrid.style.setProperty("--cw", xcw + "px");
+  clearTimeout(xzT); xzT = setTimeout(xRethumb, 350);
+}
+$("xzoom").oninput = e => xSetZoom(+e.target.value);
+$("xzin").onclick = () => xSetZoom(xcw + 40);
+$("xzout").onclick = () => xSetZoom(xcw - 40);
+$("xgen").onclick = async () => {
+  $("xgen").disabled = true; say(msg3, "Extraindo…");
+  try {
+    const { PDFDocument } = PDFLib;
+    const src = await PDFDocument.load(xBytes, { ignoreEncryption: true }), out = await PDFDocument.create();
+    const idx = [...xSel].sort((a, b) => a - b);
+    (await out.copyPages(src, idx)).forEach(p => out.addPage(p));
+    const fname = xName.replace(/\.pdf$/i, "") + "-extraido.pdf";
+    await saveFile(await out.save(), fname); say(msg3, "PDF gerado: " + fname, true);
+  } catch (e) {
+    if (e && e.code === "declined") say(msg3, "Download cancelado.");
+    else { console.error(e); say(msg3, "Erro ao extrair. Tente novamente."); }
+  }
+  xUpdate(false);
+};
+
+/* ---------- MESCLAR ---------- */
+const flist = $("flist"), msg2 = $("msg2");
+let files = [], fid = 0;
+wireDrop($("drop2"), $("file2"), addFiles);
+$("add").onclick = () => $("file2").click();
+$("clear").onclick = () => { files = []; drawFiles(); say(msg2, ""); };
+
+async function addFiles(list){
+  const ok = list.filter(isPdf);
+  if (!ok.length) return say(msg2, "Escolha arquivos PDF.");
+  say(msg2, "Lendo arquivos…");
+  for (const f of ok) {
+    const item = { id: ++fid, f, pages: "…", thumb: null };
+    files.push(item); drawFiles();
+    try {
+      const data = new Uint8Array(await f.arrayBuffer());
+      const doc = await pdfjsLib.getDocument({ data }).promise;
+      item.pages = doc.numPages; item.thumb = await thumbOf(doc, 1, 0.3);
+    } catch (e) { item.pages = "?"; item.bad = true; }
+    drawFiles();
+  }
+  say(msg2, "");
+}
+function drawFiles(){
+  flist.innerHTML = "";
+  files.forEach(it => {
+    const d = document.createElement("div"); d.className = "frow"; d.dataset.id = it.id;
+    d.innerHTML = `<div class="thumb"></div><div class="fi"><b></b><span></span></div><button class="x" title="Remover">✕</button>`;
+    d.querySelector("b").textContent = it.f.name;
+    d.querySelector("span").textContent = (it.bad ? "Não foi possível ler" : it.pages + " pág.") + " · " + fmt(it.f.size);
+    const t = d.querySelector(".thumb");
+    if (it.thumb) { const im = new Image(); im.src = it.thumb; t.appendChild(im); } else t.innerHTML = '<span class="ld">…</span>';
+    d.querySelector(".x").onclick = () => { files = files.filter(x => x.id !== it.id); drawFiles(); };
+    flist.appendChild(d);
+  });
+  const has = files.length > 0;
+  $("drop2").style.display = has ? "none" : "block";
+  $("mact").style.display = has ? "flex" : "none";
+  $("merge").disabled = files.filter(x => !x.bad).length < 2;
+}
+new Sortable(flist, { animation: 150, filter: ".x", preventOnFilter: false, onEnd: () => {
+  const ids = [...flist.children].map(c => +c.dataset.id);
+  files = ids.map(id => files.find(x => x.id === id));
+}});
+$("merge").onclick = async () => {
+  const btn = $("merge"); btn.disabled = true; say(msg2, "Mesclando…");
+  try {
+    const { PDFDocument } = PDFLib, out = await PDFDocument.create();
+    for (const it of files.filter(x => !x.bad)) {
+      const src = await PDFDocument.load(new Uint8Array(await it.f.arrayBuffer()), { ignoreEncryption: true });
+      (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
+    }
+    await saveFile(await out.save(), "mesclado.pdf"); say(msg2, "PDF mesclado com " + out.getPageCount() + " páginas.", true);
+  } catch (e) {
+    if (e && e.code === "declined") say(msg2, "Download cancelado.");
+    else { console.error(e); say(msg2, "Erro ao mesclar. Verifique se os arquivos não têm senha."); }
+  }
+  btn.disabled = files.filter(x => !x.bad).length < 2;
+};
+</script>
+</body>
+</html>
